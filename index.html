@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ritah Sekhert — Web Developer</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- GSAP for Cinematic Animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ===================== RESET & BASE ===================== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #050505;
+      color: #ffffff;
+      overflow-x: hidden;
+      cursor: none;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ===================== LOADER ===================== */
+    #loader {
+      position: fixed; inset: 0; background: #050505;
+      z-index: 100000; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    .loader-logo {
+      width: 160px; height: 160px; object-fit: contain;
+      opacity: 0; transform: scale(0.6);
+      filter: drop-shadow(0 0 30px rgba(244, 63, 94, 0.3));
+    }
+    .loader-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 52px; font-weight: 700; color: #ffffff;
+      opacity: 0; transform: translateY(40px);
+    }
+    .loader-line { width: 0; height: 2px; background: linear-gradient(to right, #f43f5e, #e8a87c); border-radius: 2px; }
+    .loader-tag {
+      font-size: 14px; letter-spacing: 4px; text-transform: uppercase;
+      color: #f43f5e; opacity: 0; transform: translateY(20px);
+    }
+
+    /* ===================== CUSTOM CURSOR ===================== */
+    .cursor-dot {
+      width: 8px; height: 8px; background: #f43f5e; border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 99999; mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      width: 40px; height: 40px; border: 1.5px solid rgba(244, 63, 94, 0.5);
+      border-radius: 50%; position: fixed; pointer-events: none; z-index: 99998;
+      transition: width 0.3s, height 0.3s, border-color 0.3s, background 0.3s;
+    }
+    .cursor-ring.hovering {
+      width: 60px; height: 60px; border-color: rgba(244, 63, 94, 0.9);
+      background: rgba(244, 63, 94, 0.05);
+    }
+
+    /* ===================== BACKGROUNDS ===================== */
+    .bg-orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .orb { position: absolute; border-radius: 50%; filter: blur(120px); }
+    .orb-1 { width: 500px; height: 500px; background: rgba(244, 63, 94, 0.08); top: -100px; left: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(168, 85, 247, 0.06); top: 30%; right: -80px; }
+    .orb-3 { width: 350px; height: 350px; background: rgba(232, 168, 124, 0.05); bottom: 10%; left: 20%; }
+
+    /* ===================== NAVIGATION ===================== */
+    #navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; }
+    .nav-pill {
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px); display: flex; align-items: center;
+      justify-content: space-between; padding: 12px 24px; border-radius: 16px; margin: 16px auto;
+      max-width: 1280px;
+    }
+    .logo-rose { color: #f43f5e; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; }
+    .logo-white { color: #ffffff; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; }
+    .nav-link {
+      font-size: 14px; color: rgba(255,255,255,0.5); position: relative; transition: color 0.2s;
+    }
+    .nav-link:hover { color: #ffffff; }
+    .nav-link::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+      background: linear-gradient(to right, #f43f5e, #e8a87c); transition: width 0.3s;
+    }
+    .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+    .nav-links { display: flex; gap: 32px; }
+    .cta-nav {
+      padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: 500;
+      background: linear-gradient(to right, #f43f5e, #e8a87c); color: #fff;
+      box-shadow: 0 8px 20px rgba(244, 63, 94, 0.25); transition: box-shadow 0.3s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cta-nav:hover { box-shadow: 0 8px 30px rgba(244, 63, 94, 0.5); }
+    #mobileMenuBtn { display: none; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+    
+    @media (max-width: 768px) {
+      .nav-links, .cta-nav { display: none !important; }
+      #mobileMenuBtn { display: block; }
+      body { cursor: auto; }
+      .cursor-dot, .cursor-ring { display: none; }
+    }
+
+    /* ===================== HERO ===================== */
+    #hero { min-height: 100vh; display: flex; align-items: center; padding-top: 80px; position: relative; overflow: hidden; }
+    .hero-container { max-width: 1280px; margin: 0 auto; padding: 0 24px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+    
+    @media (max-width: 1024px) { .hero-container { grid-template-columns: 1fr; } }
+
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+    .hero-avail {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+      border-radius: 100px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+    }
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } }
+    .avail-text { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+    .hero-company {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+      border-radius: 100px; border: 1px solid rgba(244,63,94,0.2); background: rgba(244,63,94,0.05);
+    }
+    .company-dot { width: 6px; height: 6px; border-radius: 50%; background: #f43f5e; }
+    .company-text { font-size: 12px; color: #fda4af; font-weight: 500; }
+
+    .hero-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(40px, 6vw, 80px); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; }
+    .hero-line { display: block; overflow: hidden; }
+    .hero-word { display: inline-block; transform: translateY(100%); opacity: 0; }
+    .gradient-text {
+      background: linear-gradient(135deg, #f43f5e, #e8a87c, #a855f7);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .hero-desc { font-size: 18px; color: rgba(255,255,255,0.6); max-width: 520px; line-height: 1.7; margin-top: 24px; }
+    .hero-desc-inner { transform: translateY(40px); opacity: 0; }
+
+    .hero-buttons { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+    .hero-btns-inner { transform: translateY(40px); opacity: 0; }
+    .primary-btn {
+      display: inline-flex; align-items: center; gap: 12px; padding: 16px 28px; border-radius: 16px;
+      background: linear-gradient(to right, #f43f5e, #e8a87c); font-size: 14px; font-weight: 500; color: #fff;
+      box-shadow: 0 12px 24px rgba(244, 63, 94, 0.3); transition: all 0.3s; border: none; cursor: pointer;
+    }
+    .primary-btn:hover { box-shadow: 0 12px 36px rgba(244, 63, 94, 0.5); transform: translateY(-2px); }
+    .secondary-btn {
+      display: inline-flex; align-items: center; gap: 12px; padding: 16px 28px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); font-size: 14px;
+      font-weight: 500; color: #fff; transition: all 0.3s; cursor: pointer;
+    }
+    .secondary-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+    .hero-stats { display: flex; gap: 40px; margin-top: 40px; }
+    .hero-stats-inner { transform: translateY(40px); opacity: 0; }
+    .stat-number { font-family: 'Bricolage Grotesque', sans-serif; font-size: 30px; font-weight: 700; color: #fff; }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Updated Hero Image Styles for 3D Logo */
+    .hero-image-wrapper { position: relative; opacity: 0; transform: scale(0.9); }
+    .hero-image-container { 
+      position: relative; border-radius: 24px; overflow: hidden; 
+      border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+      background: #000000; /* Black background to match your image */
+    }
+    .hero-img { 
+      width: 100%; height: 480px; object-fit: contain; display: block; /* 'contain' prevents cropping */
+    }
+
+    .floating-badge {
+      position: absolute; padding: 8px 16px; border-radius: 12px; background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; font-weight: 500;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .badge-top { top: -16px; right: -16px; color: #fda4af; }
+    .badge-bottom { bottom: -16px; left: -16px; color: #34d399; }
+
+    .scroll-indicator {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .scroll-text { font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 3px; }
+    .scroll-dot-container { width: 20px; height: 32px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); display: flex; justify-content: center; padding-top: 6px; }
+    .scroll-dot { width: 4px; height: 8px; border-radius: 2px; background: #f43f5e; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(8px); opacity: 0.3; } }
+
+    /* ===================== SECTION DEFAULTS ===================== */
+    .section { padding: 120px 24px; position: relative; max-width: 1280px; margin: 0 auto; }
+    .section-tag {
+      display: inline-block; font-size: 12px; font-weight: 600; color: #f43f5e;
+      text-transform: uppercase; letter-spacing: 3px; margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(32px, 5vw, 56px);
+      font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; color: #ffffff;
+    }
+    .title-line { display: block; overflow: hidden; }
+    .title-word { display: inline-block; transform: translateY(100%); opacity: 0; }
+    .body-text { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.7; }
+
+    /* ===================== ABOUT ===================== */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    @media (max-width: 1024px) { .about-grid { grid-template-columns: 1fr; } }
+    .about-img-wrap { position: relative; }
+    .about-img-container { border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+    .about-img { width: 100%; height: 400px; object-fit: cover; display: block; }
+    .about-border { position: absolute; top: -24px; left: -24px; width: 100%; height: 100%; border-radius: 24px; border: 1px solid rgba(244,63,94,0.2); z-index: -1; pointer-events: none; }
+    .about-decor {
+      position: absolute; bottom: -24px; right: -24px; width: 80px; height: 80px; border-radius: 16px;
+      background: linear-gradient(135deg, rgba(244,63,94,0.2), rgba(168,85,247,0.2)); border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center; font-size: 28px; backdrop-filter: blur(12px);
+    }
+    .about-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .about-card {
+      padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .about-card-icon { color: #fda4af; font-size: 18px; margin-bottom: 8px; }
+    .about-card-title { font-size: 14px; font-weight: 600; color: #ffffff; }
+    .about-card-desc { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+    /* ===================== MARQUEE ===================== */
+    .marquee-section { padding: 40px 0; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+    .marquee-track {
+      display: flex; align-items: center; gap: 32px; white-space: nowrap;
+      font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 600;
+      color: rgba(255,255,255,0.07); animation: marquee 25s linear infinite;
+    }
+    .marquee-dot { color: rgba(244, 63, 94, 0.2); font-size: 20px; }
+    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+    /* ===================== PROJECTS ===================== */
+    .project-large {
+      border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03); display: grid; grid-template-columns: 1fr 1fr;
+      transition: border-color 0.5s;
+    }
+    .project-large:hover { border-color: rgba(255,255,255,0.2); }
+    @media (max-width: 1024px) { .project-large { grid-template-columns: 1fr; } }
+    .project-info { padding: 40px; display: flex; flex-direction: column; justify-content: space-between; }
+    .project-tag {
+      display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 500;
+    }
+    .tag-rose { background: rgba(244,63,94,0.15); color: #fda4af; }
+    .tag-neutral { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+    .tag-purple { background: rgba(168,85,247,0.2); color: #c4b5fd; }
+    .tag-amber { background: rgba(245,158,11,0.2); color: #fcd34d; }
+    .project-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; margin: 12px 0; }
+    .project-desc { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 16px; }
+    .project-tech span { display: inline-block; padding: 4px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); font-size: 12px; margin-right: 4px; }
+    .project-img-wrap { position: relative; overflow: hidden; min-height: 300px; }
+    .project-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s; }
+    .project-large:hover .project-img { transform: scale(1.05); }
+    .project-img-overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.3), transparent); }
+
+    .projects-small { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 32px; }
+    @media (max-width: 768px) { .projects-small { grid-template-columns: 1fr; } }
+    .project-small {
+      border-radius: 24px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03); transition: border-color 0.5s;
+    }
+    .project-small:hover { border-color: rgba(255,255,255,0.2); }
+    .project-small .project-img-wrap { height: 220px; }
+    .project-small .project-img-overlay { background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
+    .project-small-info { padding: 24px; }
+    .project-small .project-title { font-size: 20px; }
+    .btn-sm {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px;
+      font-size: 13px; font-weight: 500; border: none; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-sm-rose { background: linear-gradient(to right, #f43f5e, #e8a87c); color: #fff; box-shadow: 0 8px 16px rgba(244,63,94,0.2); }
+    .btn-sm-rose:hover { box-shadow: 0 8px 24px rgba(244,63,94,0.4); }
+    .btn-sm-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); }
+    .btn-sm-ghost:hover { color: #fff; background: rgba(255,255,255,0.05); }
+
+    /* ===================== SKILLS ===================== */
+    .skills-bg { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(244,63,94,0.02), transparent); pointer-events: none; }
+    .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 64px; }
+    @media (max-width: 1024px) { .skills-grid { grid-template-columns: 1fr; } }
+    .skill-name { font-size: 14px; font-weight: 500; color: #ffffff; }
+    .skill-pct { font-size: 14px; color: #fda4af; }
+    .skill-track { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; margin-top: 8px; }
+    .skill-fill { height: 100%; width: 0; border-radius: 4px; }
+    .fill-1 { background: linear-gradient(to right, #f43f5e, #e8a87c); }
+    .fill-2 { background: linear-gradient(to right, #a855f7, #c084fc); }
+    .fill-3 { background: linear-gradient(to right, #f43f5e, #fbbf24); }
+    .fill-4 { background: linear-gradient(to right, #34d399, #6ee7b7); }
+    .fill-5 { background: linear-gradient(to right, #e8a87c, #f43f5e); }
+    .tech-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .tech-card {
+      padding: 24px; border-radius: 16px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1); text-align: center; transition: all 0.3s;
+    }
+    .tech-card:hover { border-color: rgba(244,63,94,0.3); background: rgba(244,63,94,0.05); transform: translateY(-4px); }
+    .tech-icon { font-size: 28px; color: rgba(255,255,255,0.4); margin-bottom: 12px; transition: all 0.3s; }
+    .tech-card:hover .tech-icon { color: #fda4af; transform: scale(1.1); }
+    .tech-name { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    /* ===================== TESTIMONIALS ===================== */
+    .test-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 64px; }
+    @media (max-width: 1024px) { .test-grid { grid-template-columns: 1fr; } }
+    .test-card {
+      padding: 24px; border-radius: 24px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1); transition: border-color 0.3s;
+    }
+    .test-card:hover { border-color: rgba(255,255,255,0.2); }
+    .stars { display: flex; gap: 4px; margin-bottom: 16px; color: #fbbf24; font-size: 14px; }
+    .test-text { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 20px; }
+    .test-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 14px; font-weight: 700; color: #fff;
+    }
+    .av-1 { background: linear-gradient(135deg, #f43f5e, #fbbf24); }
+    .av-2 { background: linear-gradient(135deg, #a855f7, #38bdf8); }
+    .av-3 { background: linear-gradient(135deg, #fbbf24, #f43f5e); }
+    .author-name { font-size: 14px; font-weight: 600; color: #ffffff; }
+    .author-role { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    /* ===================== CONTACT ===================== */
+    .contact-bg { position: absolute; inset: 0; background: linear-gradient(to top, rgba(244,63,94,0.03), transparent); pointer-events: none; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+    @media (max-width: 1024px) { .contact-grid { grid-template-columns: 1fr; } }
+    .contact-link {
+      display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 16px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; margin-bottom: 16px;
+    }
+    .contact-link:hover { border-color: rgba(244,63,94,0.3); background: rgba(244,63,94,0.05); }
+    .contact-icon {
+      width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-size: 18px;
+    }
+    .ci-rose { background: rgba(244,63,94,0.1); color: #fda4af; }
+    .ci-purple { background: rgba(168,85,247,0.1); color: #c4b5fd; }
+    .ci-white { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+    .contact-label { font-size: 14px; font-weight: 600; color: #ffffff; }
+    .contact-value { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    .contact-form {
+      padding: 32px; border-radius: 24px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1); color: #ffffff; font-size: 14px; font-family: 'Inter', sans-serif; outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: rgba(244,63,94,0.5); background: rgba(255,255,255,0.07); }
+    .form-group select option { background: #171717; }
+    .form-group textarea { resize: none; }
+    .form-submit {
+      width: 100%; padding: 16px; border-radius: 12px; background: linear-gradient(to right, #f43f5e, #e8a87c);
+      font-size: 14px; font-weight: 600; color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 12px 24px rgba(244,63,94,0.3); transition: all 0.3s;
+    }
+    .form-submit:hover { box-shadow: 0 12px 36px rgba(244,63,94,0.5); transform: translateY(-2px); }
+
+    /* ===================== FOOTER ===================== */
+    .site-footer { border-top: 1px solid rgba(255,255,255,0.05); padding: 48px 24px; }
+    .footer-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
+    .social-icon {
+      width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1); display: inline-flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.4); font-size: 16px; transition: all 0.2s;
+    }
+    .social-icon:hover { color: #fda4af; border-color: rgba(244,63,94,0.3); }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+    /* ===================== TOAST ===================== */
+    .toast {
+      position: fixed; bottom: 30px; right: 30px; padding: 16px 24px;
+      background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3);
+      border-radius: 16px; backdrop-filter: blur(12px); color: #fda4af; font-size: 14px;
+      transform: translateY(100px); opacity: 0; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10000;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ===================== SCROLLBAR ===================== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #050505; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #f43f5e, #a855f7); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <img src="https://z-cdn-media.chatglm.cn/files/dedc0ff2-7561-4ad8-a8b7-622085a56d9d.png?auth_key=1878501900-317044a789314b1b90e2d60ba356c1fd-0-cb10c534fa9df85406904cd039fd33c5" alt="R Logo" class="loader-logo" />
+    <div class="loader-name">Ritah Sekhert</div>
+    <div class="loader-line"></div>
+    <div class="loader-tag">Web Developer</div>
+  </div>
+
+  <!-- CURSOR -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"><i class="fas fa-check-circle" style="margin-right:8px;"></i><span id="toastMsg"></span></div>
+
+  <!-- BACKGROUND ORBS -->
+  <div class="bg-orbs"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="nav-pill">
+      <a href="#hero" class="logo-rose">Ritah<span class="logo-white">.dev</span></a>
+      <div class="nav-links">
+        <a href="#about" class="nav-link">About</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#skills" class="nav-link">Skills</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+      <a href="#contact" class="cta-nav">Let's Talk <i class="fas fa-arrow-right" style="font-size:12px;"></i></a>
+      <button id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-container">
+      <div>
+        <div class="hero-badges">
+          <div class="hero-avail"><span class="pulse-dot"></span><span class="avail-text">Available for work</span></div>
+          <div class="hero-company"><span class="company-dot"></span><span class="company-text"><i class="fas fa-building" style="margin-right:4px; font-size:10px;"></i>Atas Proserve Limited</span></div>
+        </div>
+        
+        <h1 class="hero-title">
+          <span class="hero-line"><span class="hero-word">I</span> <span class="hero-word">craft</span></span>
+          <span class="hero-line"><span class="hero-word gradient-text">digital</span> <span class="hero-word gradient-text">experiences</span></span>
+          <span class="hero-line"><span class="hero-word">that</span> <span class="hero-word gradient-text">convert</span></span>
+        </h1>
+
+        <div class="hero-desc">
+          <div class="hero-desc-inner">
+            Hi, I'm <strong style="color:#f43f5e">Ritah Sekhert</strong> — a web developer at <strong style="color:#fda4af">Atas Proserve Limited</strong> who blends clean code with stunning design. I build websites that don't just look pretty — they <strong style="color:#fda4af">bring clients to you</strong>.
+          </div>
+        </div>
+
+        <div class="hero-buttons">
+          <div class="hero-btns-inner">
+            <a href="#projects" class="primary-btn">View My Work <i class="fas fa-arrow-right" style="font-size:12px;"></i></a>
+            <a href="#contact" class="secondary-btn">Get In Touch</a>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stats-inner">
+            <div><div class="stat-number counter-value" data-target="3">0</div><div class="stat-label">Projects</div></div>
+            <div style="margin-left:40px;"><div class="stat-number counter-value" data-target="100">0</div><div class="stat-label">% Dedication</div></div>
+            <div style="margin-left:40px;"><div class="stat-number counter-value" data-target="5">0</div><div class="stat-label">Happy Clients</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Updated Hero Image with your 3D R Logo -->
+      <div class="hero-image-wrapper">
+        <div class="hero-image-container">
+          <img src="https://z-cdn-media.chatglm.cn/files/dedc0ff2-7561-4ad8-a8b7-622085a56d9d.png?auth_key=1878501900-317044a789314b1b90e2d60ba356c1fd-0-cb10c534fa9df85406904cd039fd33c5" alt="Ritah Sekhert 3D Logo" class="hero-img" />
+        </div>
+        <div class="floating-badge badge-top"><i class="fas fa-code" style="margin-right:4px;"></i> Clean Code</div>
+        <div class="floating-badge badge-bottom"><i class="fas fa-heart" style="margin-right:4px;"></i> Pixel Perfect</div>
+      </div>
+    </div>
+    
+    <div class="scroll-indicator">
+      <span class="scroll-text">Scroll</span>
+      <div class="scroll-dot-container"><div class="scroll-dot"></div></div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-section">
+    <div class="marquee-track">
+      <span>Web Development</span><span class="marquee-dot">✦</span><span>UI/UX Design</span><span class="marquee-dot">✦</span><span>React</span><span class="marquee-dot">✦</span><span>Next.js</span><span class="marquee-dot">✦</span><span>Tailwind CSS</span><span class="marquee-dot">✦</span><span>JavaScript</span><span class="marquee-dot">✦</span>
+      <span>Web Development</span><span class="marquee-dot">✦</span><span>UI/UX Design</span><span class="marquee-dot">✦</span><span>React</span><span class="marquee-dot">✦</span><span>Next.js</span><span class="marquee-dot">✦</span><span>Tailwind CSS</span><span class="marquee-dot">✦</span><span>JavaScript</span><span class="marquee-dot">✦</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about" class="section">
+    <div class="about-grid">
+      <div class="about-img-wrap anim-fade-left">
+        <div class="about-img-container">
+          <img src="https://picsum.photos/seed/workspace-ritah/600/700.jpg" alt="Workspace" class="about-img" />
+        </div>
+        <div class="about-border"></div>
+        <div class="about-decor">☕</div>
+      </div>
+      <div>
+        <span class="section-tag">About Me</span>
+        <h2 class="section-title">
+          <span class="title-line"><span class="title-word">A</span> <span class="title-word">developer</span> <span class="title-word">who</span></span>
+          <span class="title-line"><span class="title-word gradient-text">designs</span> <span class="title-word gradient-text">with</span> <span class="title-word gradient-text">heart</span></span>
+        </h2>
+        <p class="body-text anim-fade-up" style="margin-top:24px;">I'm a web developer at <strong style="color:#fda4af">Atas Proserve Limited</strong> who believes that great websites are where beautiful design meets flawless functionality. Every project I take on is crafted with attention to the smallest detail.</p>
+        <p class="body-text anim-fade-up" style="margin-top:16px;">From responsive layouts that look stunning on any device, to smooth interactions that keep visitors engaged — I build experiences that turn casual browsers into loyal customers.</p>
+        <div class="about-cards">
+          <div class="about-card anim-fade-up"><div class="about-card-icon"><i class="fas fa-palette"></i></div><div class="about-card-title">Design-Driven</div><div class="about-card-desc">Every pixel has purpose</div></div>
+          <div class="about-card anim-fade-up"><div class="about-card-icon"><i class="fas fa-bolt"></i></div><div class="about-card-title">Performance First</div><div class="about-card-desc">Lightning-fast load times</div></div>
+          <div class="about-card anim-fade-up"><div class="about-card-icon"><i class="fas fa-mobile-alt"></i></div><div class="about-card-title">Fully Responsive</div><div class="about-card-desc">Looks great everywhere</div></div>
+          <div class="about-card anim-fade-up"><div class="about-card-icon"><i class="fas fa-rocket"></i></div><div class="about-card-title">SEO Optimized</div><div class="about-card-desc">Found when it matters</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="section">
+    <div style="text-align:center; max-width:640px; margin:0 auto 64px;">
+      <span class="section-tag">Featured Work</span>
+      <h2 class="section-title">
+        <span class="title-line"><span class="title-word">Projects</span> <span class="title-word">I'm</span></span>
+        <span class="title-line"><span class="title-word gradient-text">proud</span> <span class="title-word gradient-text">of</span></span>
+      </h2>
+    </div>
+
+    <div class="project-large anim-scale-up">
+      <div class="project-info">
+        <div>
+          <div style="display:flex;gap:12px;margin-bottom:16px;"><span class="project-tag tag-rose">E-Commerce</span><span class="project-tag tag-neutral">2024</span></div>
+          <h3 class="project-title">Luxe Boutique</h3>
+          <p class="project-desc">A high-end fashion e-commerce platform with seamless checkout, stunning product galleries, and a 40% increase in conversion rate. Built with Next.js and Stripe.</p>
+          <div class="project-tech" style="margin-bottom:32px;"><span>Next.js</span><span>Tailwind</span><span>Stripe</span><span>Sanity CMS</span></div>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <a href="#" class="btn-sm btn-sm-rose">Live Site <i class="fas fa-external-link-alt" style="font-size:10px;"></i></a>
+          <a href="#" class="btn-sm btn-sm-ghost"><i class="fab fa-github"></i> Code</a>
+        </div>
+      </div>
+      <div class="project-img-wrap">
+        <img src="https://picsum.photos/seed/ecommerce-luxe/800/600.jpg" alt="Luxe Boutique" class="project-img" />
+        <div class="project-img-overlay"></div>
+      </div>
+    </div>
+
+    <div class="projects-small">
+      <div class="project-small anim-fade-up">
+        <div class="project-img-wrap" style="position:relative;">
+          <img src="https://picsum.photos/seed/saas-dash/700/500.jpg" alt="FlowBoard" class="project-img" />
+          <div class="project-img-overlay"></div>
+          <span class="project-tag tag-purple" style="position:absolute;top:16px;left:16px;">SaaS</span>
+        </div>
+        <div class="project-small-info">
+          <h3 class="project-title">FlowBoard</h3>
+          <p class="project-desc">A project management SaaS dashboard with real-time collaboration and drag-and-drop kanban boards.</p>
+          <div class="project-tech" style="margin-bottom:20px;"><span>React</span><span>Node.js</span><span>Socket.io</span></div>
+          <div style="display:flex;gap:12px;">
+            <a href="#" class="btn-sm btn-sm-rose">Live Site</a>
+            <a href="#" class="btn-sm btn-sm-ghost"><i class="fab fa-github"></i> Code</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-small anim-fade-up">
+        <div class="project-img-wrap" style="position:relative;">
+          <img src="https://picsum.photos/seed/restaurant-web/700/500.jpg" alt="Saveur" class="project-img" />
+          <div class="project-img-overlay"></div>
+          <span class="project-tag tag-amber" style="position:absolute;top:16px;left:16px;">Restaurant</span>
+        </div>
+        <div class="project-small-info">
+          <h3 class="project-title">Saveur</h3>
+          <p class="project-desc">An elegant restaurant website with online reservations and immersive food photography. Bookings increased by 60%.</p>
+          <div class="project-tech" style="margin-bottom:20px;"><span>Next.js</span><span>Framer Motion</span><span>Prisma</span></div>
+          <div style="display:flex;gap:12px;">
+            <a href="#" class="btn-sm btn-sm-rose">Live Site</a>
+            <a href="#" class="btn-sm btn-sm-ghost"><i class="fab fa-github"></i> Code</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="section" style="position:relative;">
+    <div class="skills-bg"></div>
+    <div style="position:relative;">
+      <div style="text-align:center;max-width:640px;margin:0 auto 64px;">
+        <span class="section-tag">My Toolkit</span>
+        <h2 class="section-title">
+          <span class="title-line"><span class="title-word">Skills</span> <span class="title-word">&</span> <span class="title-word gradient-text">Technologies</span></span>
+        </h2>
+      </div>
+
+      <div class="skills-grid">
+        <div>
+          <div class="anim-fade-left" style="margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span class="skill-name">React / Next.js</span><span class="skill-pct">95%</span></div>
+            <div class="skill-track"><div class="skill-fill fill-1" data-width="95%"></div></div>
+          </div>
+          <div class="anim-fade-left" style="margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span class="skill-name">JavaScript / TypeScript</span><span class="skill-pct">92%</span></div>
+            <div class="skill-track"><div class="skill-fill fill-2" data-width="92%"></div></div>
+          </div>
+          <div class="anim-fade-left" style="margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span class="skill-name">Tailwind CSS / SCSS</span><span class="skill-pct">98%</span></div>
+            <div class="skill-track"><div class="skill-fill fill-3" data-width="98%"></div></div>
+          </div>
+          <div class="anim-fade-left" style="margin-bottom:24px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span class="skill-name">Node.js / Express</span><span class="skill-pct">85%</span></div>
+            <div class="skill-track"><div class="skill-fill fill-4" data-width="85%"></div></div>
+          </div>
+          <div class="anim-fade-left">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span class="skill-name">UI/UX Design</span><span class="skill-pct">88%</span></div>
+            <div class="skill-track"><div class="skill-fill fill-5" data-width="88%"></div></div>
+          </div>
+        </div>
+
+        <div class="tech-grid">
+          <div class="tech-card anim-scale-up"><i class="fab fa-react tech-icon"></i><div class="tech-name">React</div></div>
+          <div class="tech-card anim-scale-up"><i class="fab fa-node-js tech-icon"></i><div class="tech-name">Node.js</div></div>
+          <div class="tech-card anim-scale-up"><i class="fab fa-js tech-icon"></i><div class="tech-name">JavaScript</div></div>
+          <div class="tech-card anim-scale-up"><i class="fab fa-figma tech-icon"></i><div class="tech-name">Figma</div></div>
+          <div class="tech-card anim-scale-up"><i class="fab fa-git-alt tech-icon"></i><div class="tech-name">Git</div></div>
+          <div class="tech-card anim-scale-up"><i class="fas fa-database tech-icon"></i><div class="tech-name">Databases</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section">
+    <div style="text-align:center;max-width:640px;margin:0 auto 64px;">
+      <span class="section-tag">Kind Words</span>
+      <h2 class="section-title">
+        <span class="title-line"><span class="title-word">What</span> <span class="title-word">clients</span> <span class="title-word gradient-text">say</span></span>
+      </h2>
+    </div>
+    <div class="test-grid">
+      <div class="test-card anim-fade-up">
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="test-text">"She completely transformed our online presence. Our sales went up 40% within the first month. The attention to detail is unmatched."</p>
+        <div class="test-author"><div class="author-avatar av-1">M</div><div><div class="author-name">Marie Laurent</div><div class="author-role">CEO, Luxe Boutique</div></div></div>
+      </div>
+      <div class="test-card anim-fade-up">
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="test-text">"Working with her was a dream. She understood our vision immediately and delivered a dashboard that our entire team loves."</p>
+        <div class="test-author"><div class="author-avatar av-2">A</div><div><div class="author-name">Alex Chen</div><div class="author-role">Founder, FlowBoard</div></div></div>
+      </div>
+      <div class="test-card anim-fade-up">
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p class="test-text">"The website she built for our restaurant is pure art. Reservations jumped 60% and customers keep complimenting the design."</p>
+        <div class="test-author"><div class="author-avatar av-3">S</div><div><div class="author-name">Sophie Moreau</div><div class="author-role">Owner, Saveur</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section" style="position:relative;">
+    <div class="contact-bg"></div>
+    <div style="position:relative;">
+      <div class="contact-grid">
+        <div>
+          <span class="section-tag">Get In Touch</span>
+          <h2 class="section-title">
+            <span class="title-line"><span class="title-word">Let's</span> <span class="title-word">create</span></span>
+            <span class="title-line"><span class="title-word gradient-text">something</span> <span class="title-word gradient-text">amazing</span></span>
+          </h2>
+          <p class="body-text anim-fade-up" style="margin-top:24px;max-width:440px;">Have a project in mind? I'd love to hear about it. Let's chat and bring your vision to life.</p>
+          <div style="margin-top:32px;">
+            <a href="mailto:ritahqueendesign@gmail.com" class="contact-link anim-fade-left">
+              <div class="contact-icon ci-rose"><i class="fas fa-envelope"></i></div>
+              <div><div class="contact-label">Email</div><div class="contact-value">ritahqueendesign@gmail.com</div></div>
+            </a>
+            <a href="#" class="contact-link anim-fade-left">
+              <div class="contact-icon ci-purple"><i class="fab fa-linkedin-in"></i></div>
+              <div><div class="contact-label">LinkedIn</div><div class="contact-value">Connect with me</div></div>
+            </a>
+            <a href="#" class="contact-link anim-fade-left">
+              <div class="contact-icon ci-white"><i class="fab fa-github"></i></div>
+              <div><div class="contact-label">GitHub</div><div class="contact-value">Check my repos</div></div>
+            </a>
+          </div>
+        </div>
+        <div class="anim-fade-right">
+          <form id="contactForm" class="contact-form">
+            <div class="form-group"><label>Your Name</label><input type="text" placeholder="Jane Smith" required /></div>
+            <div class="form-group"><label>Email</label><input type="email" placeholder="jane@company.com" required /></div>
+            <div class="form-group"><label>Project Type</label><select><option value="">Select a type</option><option>Website</option><option>Web App</option><option>E-Commerce</option><option>Redesign</option></select></div>
+            <div class="form-group"><label>Message</label><textarea rows="4" placeholder="Tell me about your project..." required></textarea></div>
+            <button type="submit" class="form-submit">Send Message <i class="fas fa-paper-plane" style="font-size:12px;"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div><span class="logo-rose">Ritah</span><span class="logo-white">.dev</span></div>
+      <div style="display:flex;gap:16px;">
+        <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="social-icon"><i class="fab fa-dribbble"></i></a>
+      </div>
+      <div class="footer-copy">© 2024 Ritah Sekhert. Made with <span style="color:#f43f5e">♥</span></div>
+    </div>
+  </footer>
+
+  <!-- =================== JAVASCRIPT =================== -->
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // --- LOADER ---
+    window.addEventListener('load', () => {
+      const tl = gsap.timeline();
+      tl.to('.loader-logo', { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.7)' })
+        .to('.loader-name', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.3')
+        .to('.loader-line', { width: '120px', duration: 0.5, ease: 'power2.inOut' }, '-=0.2')
+        .to('.loader-tag', { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.2')
+        .to('#loader', { opacity: 0, visibility: 'hidden', duration: 0.6, ease: 'power2.inOut', delay: 0.6 })
+        .add(() => {
+          document.getElementById('loader').style.display = 'none';
+          animateHero();
+        });
+    });
+
+    // --- HERO ANIMATIONS ---
+    function animateHero() {
+      const heroTl = gsap.timeline();
+      
+      heroTl.to('.hero-word', {
+        opacity: 1, y: 0, duration: 0.8, stagger: 0.06, ease: 'power3.out'
+      })
+      .to('.hero-desc-inner', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.4')
+      .to('.hero-btns-inner', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.4')
+      .to('.hero-stats-inner', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.4')
+      .to('.hero-image-wrapper', { opacity: 1, scale: 1, duration: 1, ease: 'power3.out' }, '-=0.8');
+
+      document.querySelectorAll('.counter-value').forEach(counter => {
+        const target = parseInt(counter.dataset.target);
+        gsap.to({ val: 0 }, {
+          val: target, duration: 2, ease: 'power2.out',
+          onUpdate: function() { counter.textContent = Math.round(this.targets()[0].val); }
+        });
+      });
+
+      gsap.to('.badge-top', { y: -15, duration: 3, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+      gsap.to('.badge-bottom', { y: 15, duration: 4, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 1 });
+    }
+
+    // --- SCROLL ANIMATIONS ---
+    gsap.utils.toArray('.section-title').forEach(title => {
+      gsap.to(title.querySelectorAll('.title-word'), {
+        scrollTrigger: { trigger: title, start: 'top 85%' },
+        opacity: 1, y: 0, duration: 0.7, stagger: 0.06, ease: 'power3.out'
+      });
+    });
+
+    gsap.utils.toArray('.anim-fade-up').forEach(el => {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 85%' },
+        y: 60, opacity: 0, duration: 0.8, ease: 'power3.out'
+      });
+    });
+
+    gsap.utils.toArray('.anim-fade-left').forEach(el => {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 85%' },
+        x: -80, opacity: 0, duration: 0.8, ease: 'power3.out'
+      });
+    });
+
+    gsap.utils.toArray('.anim-fade-right').forEach(el => {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 85%' },
+        x: 80, opacity: 0, duration: 0.8, ease: 'power3.out'
+      });
+    });
+
+    gsap.utils.toArray('.anim-scale-up').forEach(el => {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 85%' },
+        scale: 0.9, opacity: 0, duration: 0.8, ease: 'power3.out'
+      });
+    });
+
+    gsap.utils.toArray('.skill-fill').forEach(bar => {
+      gsap.to(bar, {
+        scrollTrigger: { trigger: bar, start: 'top 90%' },
+        width: bar.dataset.width, duration: 1.2, ease: 'power3.out'
+      });
+    });
+
+    gsap.to('.hero-image-container', {
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 },
+      y: 80, ease: 'none'
+    });
+
+    // --- CUSTOM CURSOR ---
+    const cursorDot = document.getElementById('cursorDot');
+    const cursorRing = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX; mouseY = e.clientY;
+      cursorDot.style.left = mouseX - 4 + 'px';
+      cursorDot.style.top = mouseY - 4 + 'px';
+    });
+
+    function animateRing() {
+      ringX += (mouseX - ringX) * 0.15;
+      ringY += (mouseY - ringY) * 0.15;
+      cursorRing.style.left = ringX - 20 + 'px';
+      cursorRing.style.top = ringY - 20 + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    document.querySelectorAll('a, button, input, textarea, select, .tech-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursorRing.classList.add('hovering'));
+      el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovering'));
+    });
+
+    // --- MAGNETIC BUTTONS ---
+    document.querySelectorAll('.primary-btn, .cta-nav, .form-submit').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        gsap.to(btn, { x: x * 0.2, y: y * 0.2, duration: 0.3, ease: 'power2.out' });
+      });
+      btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
+      });
+    });
+
+    // --- CONTACT FORM ---
+    document.getElementById('contactForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = "Message sent! I'll get back to you soon ✨";
+      toast.classList.add('show');
+      e.target.reset();
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    });
+
+    // --- SMOOTH SCROLL ---
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>
